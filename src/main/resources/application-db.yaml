@@ -1,0 +1,43 @@
+#Database
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:postgresql://${DB_CONNECTION_IP:localhost}:${DB_CONNECTION_PORT:5432}/${DB_NAME:product_service}
+    username: &username ${DB_CONNECTION_USERNAME:admin}
+    password: &password ${DB_CONNECTION_PASSWORD:123456}
+    #    url: jdbc:postgresql://localhost:5432/product_service?allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true&useSSL=false&useJDBCCompliantTimezoneShift=true&useLegacyDateTimeCode=false&serverTimezone=UTC&zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=UTF-8
+    #    username: root
+    #    password: password
+    testWhileIdle: true
+    #    validationQuery: "SELECT 1;"
+    timeBetweenEvictionRunsMillis: 60000
+    testOnBorrow: true
+    validationInterval: 10000
+    logValidationErrors: true
+    hikari:
+      leak-detectionThreshold: 30000
+      validationTimeout: 300000
+      removeAbandoned: true
+      removeAbandonedTmeout: 60
+      connectionTimeout: 30000
+      idleTimeout: 600000
+      maxLifetime: 1800000
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        temp:
+          useJdbcMetadataDefaults: "false"
+        connection:
+          providerDisablesAutocommit: false
+    showSql: true
+    generateDdl: false
+    openInView: false
+    hibernate:
+      ddlAuto: none
+  liquibase:
+    enabled: true
+    change-log: classpath:liquibase/db.changelog-master.yaml
+    drop-first: false
+    default-schema: public
+
