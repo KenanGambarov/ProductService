@@ -37,7 +37,7 @@ spring:
       ddlAuto: none
   liquibase:
     enabled: true
-    change-log: classpath:liquibase/db.changelog-master.yaml
+    change-log: classpath:liquibase/db.changelog-master.yml
     drop-first: false
     default-schema: public
 
