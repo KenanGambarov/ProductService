@@ -12,6 +12,8 @@ services:
 #    docker network create ms-services
     networks:
       - ms-services
+    volumes:
+      - ./logs:/opt/app/logs
     environment:
       DB_CONNECTION_IP: product_db
       DB_CONNECTION_PORT: 5432
