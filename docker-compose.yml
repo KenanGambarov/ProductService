@@ -13,7 +13,7 @@ services:
     networks:
       - ms-services
     volumes:
-      - ./logs:/opt/app/logs
+      - ./logs/product-service:/opt/app/logs/product-service
     environment:
       DB_CONNECTION_IP: product_db
       DB_CONNECTION_PORT: 5432
@@ -67,7 +67,7 @@ services:
     user: root
     volumes:
       - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
-      - ./logs:/opt/app/logs
+      - ./logs/product-service:/opt/app/logs/product-service
     depends_on:
       - elasticsearch
     networks:
@@ -86,6 +86,7 @@ services:
 networks:
   ms-services:
     external: true
+    driver: bridge
 volumes:
   product_db_data:
     driver: local
