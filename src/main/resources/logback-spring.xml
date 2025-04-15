@@ -35,5 +35,11 @@
     <root level="INFO">
         <appender-ref ref="JSON_FILE"/>
     </root>
+    <root level="ERROR">
+        <appender-ref ref="JSON_FILE"/>
+    </root>
+    <root level="WARN">
+        <appender-ref ref="JSON_FILE"/>
+    </root>
 
 </configuration>

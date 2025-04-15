@@ -1,3 +1,14 @@
+resilience4j:
+  retry:
+    instances:
+      redisRetry:
+        max-attempts: 3
+        wait-duration: 2s
+        retry-exceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+        ignore-exceptions:
+          - com.productservice.exception.NotFoundException
 logging:
   config: classpath:logback-spring.xml
 redis:

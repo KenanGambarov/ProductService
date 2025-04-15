@@ -8,14 +8,14 @@ import com.productservice.entity.ProductEntity;
 import com.productservice.exception.NotFoundException;
 import com.productservice.mapper.ProductCategoryMapper;
 import com.productservice.repository.ProductRepository;
+import com.productservice.service.ProductCacheService;
 import com.productservice.service.ProductCategoryService;
 import com.productservice.service.ProductService;
-import com.productservice.util.CacheUtil;
-import com.productservice.util.constraints.ProductCacheConstraints;
-import com.productservice.util.constraints.ProductCacheDurationConstraints;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,27 +28,19 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final ProductCategoryService categoryService;
-    private final CacheUtil cacheUtil;
+    private final ProductCacheService productCacheService;
 
 
     @Override
-    public List<ProductResponseDto> getAllProducts() {
-        return List.of();
+    public Page<ProductResponseDto> getAllProducts(Pageable pageable) {
+        return productCacheService.getAllProductsFromCacheOrDB(pageable);
     }
 
 
     @Override
     public ProductResponseDto getProductById(Long id) {
         ProductEntity productEntity = getProduct(id).orElseThrow(NotFoundException::new);
-        ProductCategoryResponseDto responseDto = ProductCategoryResponseDto.builder()
-                .name(productEntity.getCategory().getName())
-                .build();
-        return ProductResponseDto.builder()
-                .name(productEntity.getName())
-                .description(productEntity.getDescription())
-                .price(productEntity.getPrice())
-                .category(responseDto)
-                .build();
+        return ProductCategoryMapper.mapToDto(productEntity);
     }
 
     @Transactional
@@ -68,7 +60,7 @@ public class ProductServiceImpl implements ProductService {
                 .build();
         category = productRepository.save(category);
         log.info("Product created with id: {}", category.getId());
-        clearProductCache(category.getId());
+        productCacheService.clearProductCache(category.getId());
     }
 
     @Override
@@ -88,7 +80,7 @@ public class ProductServiceImpl implements ProductService {
                     .build();
             category = productRepository.save(category);
             log.info("Product updated with id: {}", category.getId());
-            clearProductCache(category.getId());
+            productCacheService.clearProductCache(category.getId());
         }else
             throw new RuntimeException("Product not found");
 
@@ -101,25 +93,16 @@ public class ProductServiceImpl implements ProductService {
         if(productEntity.isPresent()){
             productRepository.deleteById(id);
             log.info("Product deleted with id: {}", id);
-            clearProductCache(id);
+            productCacheService.clearProductCache(id);
         }else
             throw new RuntimeException("Product not found");
     }
 
     private Optional<ProductEntity> getProduct(Long productId) {
-        List<ProductEntity> items = cacheUtil.getOrLoad(ProductCacheConstraints.PRODUCT_KEY.getKey(productId),
-                () ->{log.debug("Product with id {} added to cache", productId); return productRepository.findAllById(productId);},
-                ProductCacheDurationConstraints.DAY.toDuration());
+        List<ProductEntity> items = productCacheService.getProductFromCacheOrDB(productId);
 
         return items.stream()
                 .filter(item -> item.getId().equals(productId))
                 .findFirst();
-    }
-
-
-
-    private void clearProductCache(Long productId) {
-        cacheUtil.deleteFromCache(ProductCacheConstraints.PRODUCT_KEY.getKey(productId));
-        log.debug("Cache cleared for product {}", productId);
     }
 }
