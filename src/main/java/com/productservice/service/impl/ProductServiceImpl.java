@@ -7,6 +7,7 @@ import com.productservice.entity.ProductCategoryEntity;
 import com.productservice.entity.ProductEntity;
 import com.productservice.exception.NotFoundException;
 import com.productservice.mapper.ProductCategoryMapper;
+import com.productservice.mapper.ProductMapper;
 import com.productservice.repository.ProductRepository;
 import com.productservice.service.ProductCacheService;
 import com.productservice.service.ProductCategoryService;
@@ -40,7 +41,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponseDto getProductById(Long id) {
         ProductEntity productEntity = getProduct(id).orElseThrow(NotFoundException::new);
-        return ProductCategoryMapper.mapToDto(productEntity);
+        return ProductMapper.mapToDto(productEntity);
     }
 
     @Transactional
@@ -52,15 +53,10 @@ public class ProductServiceImpl implements ProductService {
             throw new RuntimeException("Product category not found");
         }
         ProductCategoryEntity categoryEntity = ProductCategoryMapper.toEntity(product.getCategoryId(),responseDto);
-        ProductEntity category = ProductEntity.builder()
-                .name(product.getName())
-                .description(product.getDescription())
-                .price(product.getPrice())
-                .category(categoryEntity)
-                .build();
-        category = productRepository.save(category);
-        log.info("Product created with id: {}", category.getId());
-        productCacheService.clearProductCache(category.getId());
+        ProductEntity productEntity = ProductMapper.toEntity(null,product,categoryEntity);
+        productEntity = productRepository.save(productEntity);
+        log.info("Product created with id: {}", productEntity.getId());
+        productCacheService.clearProductCache(productEntity.getId());
     }
 
     @Override
@@ -69,18 +65,13 @@ public class ProductServiceImpl implements ProductService {
         if(responseDto==null){
             throw new RuntimeException("Product category not found");
         }
-        Optional<ProductEntity> productEntity = getProduct(id);
-        if(productEntity.isPresent()){
+        Optional<ProductEntity> optionalProduct = getProduct(id);
+        if(optionalProduct.isPresent()){
             ProductCategoryEntity categoryEntity = ProductCategoryMapper.toEntity(product.getCategoryId(),responseDto);;
-            ProductEntity category = ProductEntity.builder()
-                    .name(product.getName())
-                    .description(product.getDescription())
-                    .price(product.getPrice())
-                    .category(categoryEntity)
-                    .build();
-            category = productRepository.save(category);
-            log.info("Product updated with id: {}", category.getId());
-            productCacheService.clearProductCache(category.getId());
+            ProductEntity productEntity = ProductMapper.toEntity(id,product,categoryEntity);
+            productEntity = productRepository.save(productEntity);
+            log.info("Product updated with id: {}", productEntity.getId());
+            productCacheService.clearProductCache(productEntity.getId());
         }else
             throw new RuntimeException("Product not found");
 

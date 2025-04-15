@@ -3,6 +3,7 @@ package com.productservice.service.impl;
 import com.productservice.dto.request.ProductCategoryRequestDto;
 import com.productservice.dto.response.ProductCategoryResponseDto;
 import com.productservice.entity.ProductCategoryEntity;
+import com.productservice.mapper.ProductCategoryMapper;
 import com.productservice.repository.ProductCategoryRepository;
 import com.productservice.service.ProductCategoryCacheService;
 import com.productservice.service.ProductCategoryService;
@@ -28,9 +29,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
 
     @Override
     public void createProductCategory(ProductCategoryRequestDto requestDto) {
-        ProductCategoryEntity category = ProductCategoryEntity.builder()
-                .name(requestDto.getName())
-                .build();
+        ProductCategoryEntity category = ProductCategoryMapper.toEntity(null, requestDto);
         category = categoryRepository.save(category);
         log.info("product category created with id {}", category.getId());
         categoryCacheService.clearProductCategoryCache(category.getId());
@@ -40,10 +39,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
     public void updateProductCategory(Long id, ProductCategoryRequestDto requestDto) {
         ProductCategoryEntity category = categoryCacheService.getProductCategory(id);
         if (category==null) {
-            category = ProductCategoryEntity.builder()
-                    .id(id)
-                    .name(requestDto.getName())
-                    .build();
+            category = ProductCategoryMapper.toEntity(id,requestDto);
             categoryRepository.save(category);
             log.info("product category with id {} updated", id);
             categoryCacheService.clearProductCategoryCache(category.getId());
