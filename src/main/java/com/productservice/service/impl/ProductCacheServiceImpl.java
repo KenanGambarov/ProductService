@@ -3,6 +3,7 @@ package com.productservice.service.impl;
 import com.productservice.dto.response.ProductResponseDto;
 import com.productservice.entity.ProductEntity;
 import com.productservice.mapper.ProductCategoryMapper;
+import com.productservice.mapper.ProductMapper;
 import com.productservice.repository.ProductRepository;
 import com.productservice.service.ProductCacheService;
 import com.productservice.util.CacheUtil;
@@ -36,7 +37,7 @@ public class ProductCacheServiceImpl implements ProductCacheService {
                 cacheKey,
                 () -> {
                     log.debug("Loading product page {} from DB and caching", pageable.getPageNumber());
-                    return productRepository.findAllBy(pageable).map(ProductCategoryMapper::mapToDto);
+                    return productRepository.findAllBy(pageable).map(ProductMapper::mapToDto);
                 },
                 ProductCacheDurationConstraints.DAY.toDuration()
         );
@@ -44,7 +45,7 @@ public class ProductCacheServiceImpl implements ProductCacheService {
 
     public Page<ProductResponseDto> fallbackGetAllProducts(Pageable pageable, Throwable t) {
         log.error("Redis not available for pageable products, falling back to DB. Error: {}", t.getMessage());
-        return productRepository.findAllBy(pageable).map(ProductCategoryMapper::mapToDto);
+        return productRepository.findAllBy(pageable).map(ProductMapper::mapToDto);
     }
 
     @Override

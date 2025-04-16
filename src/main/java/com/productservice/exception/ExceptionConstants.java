@@ -5,9 +5,7 @@ import lombok.Getter;
 @Getter
 public enum ExceptionConstants {
 
-    NOT_FOUND("Not Found"),
     VALIDATION_FAILED("Validation Failed"),
-    INTERNAL_SERVER_ERROR("Internal Server Error"),
     UNEXPECTED_ERROR("Unexpected Error"),
     CLIENT_ERROR("Exception from Client"),
     PRODUCT_NOT_FOUND("Product Not Found"),
