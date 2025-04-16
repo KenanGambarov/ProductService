@@ -23,7 +23,7 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.NOT_FOUND.value());
-        body.put("error", "Not Found");
+        body.put("error", ExceptionConstants.NOT_FOUND.getMessage());
         body.put("message", ex.getMessage());
 
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", "Validation Failed");
+        body.put("error", ExceptionConstants.VALIDATION_FAILED.getMessage());
         body.put("details", errors);
 
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
@@ -56,7 +56,7 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-        body.put("error", "Internal Server Error");
+        body.put("error", ExceptionConstants.INTERNAL_SERVER_ERROR.getMessage());
         body.put("message", "Something went wrong");
 
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);

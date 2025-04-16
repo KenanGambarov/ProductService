@@ -5,6 +5,7 @@ import com.productservice.dto.response.ProductCategoryResponseDto;
 import com.productservice.dto.response.ProductResponseDto;
 import com.productservice.entity.ProductCategoryEntity;
 import com.productservice.entity.ProductEntity;
+import com.productservice.exception.ExceptionConstants;
 import com.productservice.exception.NotFoundException;
 import com.productservice.mapper.ProductCategoryMapper;
 import com.productservice.mapper.ProductMapper;
@@ -50,7 +51,7 @@ public class ProductServiceImpl implements ProductService {
         ProductCategoryResponseDto responseDto = categoryService.getProductCategoryById(product.getCategoryId());
 
         if(responseDto==null){
-            throw new RuntimeException("Product category not found");
+            throw new RuntimeException(ExceptionConstants.PRODUCT_CATEGORY_NOT_FOUND.getMessage());
         }
         ProductCategoryEntity categoryEntity = ProductCategoryMapper.toEntity(product.getCategoryId(),responseDto);
         ProductEntity productEntity = ProductMapper.toEntity(null,product,categoryEntity);
@@ -63,7 +64,7 @@ public class ProductServiceImpl implements ProductService {
     public void updateProduct(Long id, ProductRequestDto product) {
         ProductCategoryResponseDto responseDto = categoryService.getProductCategoryById(product.getCategoryId());
         if(responseDto==null){
-            throw new RuntimeException("Product category not found");
+            throw new RuntimeException(ExceptionConstants.PRODUCT_CATEGORY_NOT_FOUND.getMessage());
         }
         Optional<ProductEntity> optionalProduct = getProduct(id);
         if(optionalProduct.isPresent()){
@@ -73,7 +74,7 @@ public class ProductServiceImpl implements ProductService {
             log.info("Product updated with id: {}", productEntity.getId());
             productCacheService.clearProductCache(productEntity.getId());
         }else
-            throw new RuntimeException("Product not found");
+            throw new RuntimeException(ExceptionConstants.PRODUCT_NOT_FOUND.getMessage());
 
 
     }
@@ -86,7 +87,7 @@ public class ProductServiceImpl implements ProductService {
             log.info("Product deleted with id: {}", id);
             productCacheService.clearProductCache(id);
         }else
-            throw new RuntimeException("Product not found");
+            throw new RuntimeException(ExceptionConstants.PRODUCT_NOT_FOUND.getMessage());
     }
 
     private Optional<ProductEntity> getProduct(Long productId) {

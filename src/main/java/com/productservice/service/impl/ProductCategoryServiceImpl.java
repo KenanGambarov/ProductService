@@ -3,6 +3,7 @@ package com.productservice.service.impl;
 import com.productservice.dto.request.ProductCategoryRequestDto;
 import com.productservice.dto.response.ProductCategoryResponseDto;
 import com.productservice.entity.ProductCategoryEntity;
+import com.productservice.exception.ExceptionConstants;
 import com.productservice.mapper.ProductCategoryMapper;
 import com.productservice.repository.ProductCategoryRepository;
 import com.productservice.service.ProductCategoryCacheService;
@@ -44,7 +45,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             log.info("product category with id {} updated", id);
             categoryCacheService.clearProductCategoryCache(category.getId());
         }else
-            throw new RuntimeException("Product category not found");
+            throw new RuntimeException(ExceptionConstants.PRODUCT_CATEGORY_NOT_FOUND.getMessage());
     }
 
     @Override
@@ -55,7 +56,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             log.info("product category with id {} deleted", id);
             categoryCacheService.clearProductCategoryCache(id);
         }else
-            throw new RuntimeException("Product category not found");
+            throw new RuntimeException(ExceptionConstants.PRODUCT_CATEGORY_NOT_FOUND.getMessage());
 
     }
 
