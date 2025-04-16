@@ -35,9 +35,8 @@ public class GlobalExceptionHandler {
         log.warn("Validation failed: {}", ex.getMessage());
 
         Map<String, Object> errors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(fieldError -> {
-            errors.put(fieldError.getField(), fieldError.getDefaultMessage());
-        });
+        ex.getBindingResult().getFieldErrors().forEach(fieldError ->
+                errors.put(fieldError.getField(), fieldError.getDefaultMessage()));
 
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
@@ -56,8 +55,8 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-        body.put("error", ExceptionConstants.INTERNAL_SERVER_ERROR.getMessage());
-        body.put("message", "Something went wrong");
+        body.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
+        body.put("message", ExceptionConstants.UNEXPECTED_ERROR.getMessage());
 
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
