@@ -26,6 +26,13 @@ private final ProductService productService;
         return productService.getAllProducts(pageable);
     }
 
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public ProductResponseDto getProductById(@PathVariable("id") Long id){
+        return productService.getProductById(id);
+    }
+
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void createProduct(@RequestBody ProductRequestDto product) {

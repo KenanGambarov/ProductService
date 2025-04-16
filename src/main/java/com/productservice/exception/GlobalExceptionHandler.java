@@ -44,6 +44,7 @@ public class GlobalExceptionHandler {
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
                 .errors(ExceptionConstants.VALIDATION_FAILED.getMessage())
+                .message(ExceptionConstants.VALIDATION_FAILED.getMessage())
                 .details(errors)
                 .build();
     }

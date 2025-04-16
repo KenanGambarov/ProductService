@@ -23,6 +23,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+import static com.productservice.exception.ExceptionConstants.PRODUCT_NOT_FOUND;
+
 @Slf4j
 @AllArgsConstructor
 @Service
@@ -41,7 +43,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponseDto getProductById(Long id) {
-        ProductEntity productEntity = getProduct(id).orElseThrow(NotFoundException::new);
+        ProductEntity productEntity = getProduct(id).orElseThrow(() -> new NotFoundException(PRODUCT_NOT_FOUND.getMessage()));
         return ProductMapper.mapToDto(productEntity);
     }
 
@@ -74,7 +76,7 @@ public class ProductServiceImpl implements ProductService {
             log.info("Product updated with id: {}", productEntity.getId());
             productCacheService.clearProductCache(productEntity.getId());
         }else
-            throw new RuntimeException(ExceptionConstants.PRODUCT_NOT_FOUND.getMessage());
+            throw new RuntimeException(PRODUCT_NOT_FOUND.getMessage());
 
 
     }
@@ -87,7 +89,7 @@ public class ProductServiceImpl implements ProductService {
             log.info("Product deleted with id: {}", id);
             productCacheService.clearProductCache(id);
         }else
-            throw new RuntimeException(ExceptionConstants.PRODUCT_NOT_FOUND.getMessage());
+            throw new RuntimeException(PRODUCT_NOT_FOUND.getMessage());
     }
 
     private Optional<ProductEntity> getProduct(Long productId) {

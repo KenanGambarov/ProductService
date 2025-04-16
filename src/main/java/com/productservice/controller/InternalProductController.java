@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("internal/v1/products")
+@RequestMapping("/internal/v1/products")
 public class InternalProductController {
 
     private final ProductService productService;
