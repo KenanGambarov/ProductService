@@ -6,11 +6,11 @@ filebeat.inputs:
     json.keys_under_root: true
     json.add_error_key: true
     json.ignore_decoding_error: true
+    fields:
+      service.name: product-service
+    fields_under_root: true
 
 output.elasticsearch: 
   hosts: ["http://elasticsearch:9200"]
   username: "elastic"    # Elasticsearch istifadəçi adı
-  password: "sSM*iZr*b0SOvxjC_QqP"  # Elasticsearch şifrəsi
-
-setup.kibana:
-  host: "http://kibana:5601"
+  password: "sSM*iZr*b0SOvxjC_QqP"
