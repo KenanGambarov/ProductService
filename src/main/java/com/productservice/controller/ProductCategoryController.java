@@ -14,7 +14,7 @@ public class ProductCategoryController {
 
     private final ProductCategoryService categoryService;
 
-    @GetMapping("/id")
+    @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public ProductCategoryResponseDto getProductCategoryById(@RequestParam("id") Long id) {
         return categoryService.getProductCategoryById(id);
