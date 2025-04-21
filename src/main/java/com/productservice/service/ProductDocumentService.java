@@ -11,7 +11,7 @@ public interface ProductDocumentService {
 
     void update(ProductEntity entity);
 
-    List<ProductDocumentResponseDto> search(String keyword);
+    List<ProductDocumentResponseDto> search(String keyword, int page, int size, String sortBy, String sortDirection);
 
     void delete(Long id);
 

@@ -1,14 +1,13 @@
 package com.productservice.search;
 
+import com.productservice.util.ElasticsearchSortUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.*;
 
 import java.util.Date;
 
@@ -17,16 +16,22 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldNameConstants
-@Document(indexName = "product")
+@Document(indexName = ProductDocument.INDEX_NAME)
 public class ProductDocument {
 
     @Id
     private Long id;
 
-    @Field(type = FieldType.Text)
+    @MultiField(
+            mainField = @Field(type = FieldType.Text),
+            otherFields = @InnerField(suffix = ElasticsearchSortUtil.KEYWORD_SUFFIX, type = FieldType.Keyword)
+    )
     private String name;
 
-    @Field(type = FieldType.Text)
+    @MultiField(
+            mainField = @Field(type = FieldType.Text),
+            otherFields = @InnerField(suffix = ElasticsearchSortUtil.KEYWORD_SUFFIX, type = FieldType.Keyword)
+    )
     private String description;
 
     @Field(type = FieldType.Double)
@@ -35,8 +40,12 @@ public class ProductDocument {
     @Field(type = FieldType.Date)
     private Date createdAt;
 
-    @Field(type = FieldType.Text)
+    @MultiField(
+            mainField = @Field(type = FieldType.Text),
+            otherFields = @InnerField(suffix = ElasticsearchSortUtil.KEYWORD_SUFFIX, type = FieldType.Keyword)
+    )
     private String categoryName;
 
     public static final String INDEX_NAME = "products";
+
 }

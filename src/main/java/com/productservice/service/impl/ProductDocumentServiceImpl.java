@@ -1,6 +1,7 @@
 package com.productservice.service.impl;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch.core.*;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.productservice.dto.response.ProductDocumentResponseDto;
@@ -8,6 +9,7 @@ import com.productservice.entity.ProductEntity;
 import com.productservice.mapper.ProductDocumentMapper;
 import com.productservice.search.ProductDocument;
 import com.productservice.service.ProductDocumentService;
+import com.productservice.util.ElasticsearchSortUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,10 +26,16 @@ public class ProductDocumentServiceImpl implements ProductDocumentService {
     private final ElasticsearchClient elasticsearchClient;
 
     @Override
-    public List<ProductDocumentResponseDto> search(String keyword) {
+    public List<ProductDocumentResponseDto> search(String keyword, int page, int size, String sortBy, String sortDirection) {
         try {
+            int from = (page - 1) * size;
+
             SearchResponse<ProductDocument> response = elasticsearchClient.search(d -> d
                     .index(ProductDocument.INDEX_NAME)
+                    .from(from)
+                    .size(size)
+                    .sort(sort -> sort.field(f -> f.field(ElasticsearchSortUtil.resolveSortField(sortBy)).
+                            order(sortDirection.equalsIgnoreCase(SortOrder.Desc.jsonValue())?SortOrder.Desc:SortOrder.Asc)))
                     .query(q -> q
                             .bool(b -> b
                                     .should(s -> s.matchPhrasePrefix(m -> m.field(ProductDocument.Fields.name).query(keyword)))
@@ -35,6 +43,7 @@ public class ProductDocumentServiceImpl implements ProductDocumentService {
                                     .should(s -> s.matchPhrasePrefix(m -> m.field(ProductDocument.Fields.categoryName).query(keyword)))
                                     .minimumShouldMatch("1")
                             )
+
                     ), ProductDocument.class);
             return ProductDocumentMapper.mapToDto(response.hits().hits().stream()
                     .map(Hit::source)

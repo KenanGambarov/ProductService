@@ -28,8 +28,12 @@ private final ProductDocumentService productDocumentService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<ProductDocumentResponseDto> getProducts(@RequestParam String keyword) {
-        return productDocumentService.search(keyword);
+    public List<ProductDocumentResponseDto> getProducts(@RequestParam(value = "keyword", defaultValue = "")  String keyword,
+                                                        @RequestParam(value = "page", defaultValue = "1") int page,
+                                                        @RequestParam(value = "size", defaultValue = "10") int size,
+                                                        @RequestParam(value = "sortBy", defaultValue = "name") String sortBy,
+                                                        @RequestParam(value = "sortDirection", defaultValue = "asc") String sortDirection) {
+        return productDocumentService.search(keyword,page,size,sortBy,sortDirection);
     }
 
     @GetMapping("/{id}")
