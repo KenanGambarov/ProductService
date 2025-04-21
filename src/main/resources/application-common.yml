@@ -19,3 +19,6 @@ client:
     url: ms.product:8080/
 server:
   port: 8080
+elasticsearch:
+  host: product_search_elasticsearch
+  port: 9200

@@ -1,0 +1,15 @@
+server.name: kibana_search
+server.host: "0.0.0.0"
+
+elasticsearch.hosts: [ "http://product_search_elasticsearch:9200" ]
+elasticsearch.ssl.verificationMode: none
+
+xpack.encryptedSavedObjects.encryptionKey: "psks_5f93c9b1e1c4a8b73907d2f84010a3df"
+xpack.security.encryptionKey: "fc9b3e423df76cfbc11c2e9e50db9cde"
+xpack.reporting.encryptionKey: "pskr_48b2c19f32e40a17a8e32b7c5018ddc4"
+#ssl.enabled: false
+xpack.fleet.enabled: false
+
+# Optional
+server.publicBaseUrl: "http://localhost:5602"
+

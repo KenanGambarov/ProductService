@@ -19,6 +19,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
 
     private final ProductCategoryCacheService categoryCacheService;
     private final ProductCategoryRepository categoryRepository;
+    private final ProductDocumentServiceImpl productSearchService;
 
     @Override
     public ProductCategoryResponseDto getProductCategoryById(Long id) {
@@ -42,6 +43,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
         if (category==null) {
             category = ProductCategoryMapper.toEntity(id,requestDto);
             categoryRepository.save(category);
+            productSearchService.reindex(category.getName());
             log.info("product category with id {} updated", id);
             categoryCacheService.clearProductCategoryCache(category.getId());
         }else

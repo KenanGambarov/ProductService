@@ -12,6 +12,7 @@ import com.productservice.mapper.ProductMapper;
 import com.productservice.repository.ProductRepository;
 import com.productservice.service.ProductCacheService;
 import com.productservice.service.ProductCategoryService;
+import com.productservice.service.ProductDocumentService;
 import com.productservice.service.ProductService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -33,6 +34,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final ProductCategoryService categoryService;
     private final ProductCacheService productCacheService;
+    private final ProductDocumentService productDocumentService;
 
 
     @Override
@@ -58,6 +60,7 @@ public class ProductServiceImpl implements ProductService {
         ProductCategoryEntity categoryEntity = ProductCategoryMapper.toEntity(product.getCategoryId(),responseDto);
         ProductEntity productEntity = ProductMapper.toEntity(null,product,categoryEntity);
         productEntity = productRepository.save(productEntity);
+        productDocumentService.index(productEntity);
         log.info("Product created with id: {}", productEntity.getId());
         productCacheService.clearProductCache(productEntity.getId());
     }
@@ -73,6 +76,7 @@ public class ProductServiceImpl implements ProductService {
             ProductCategoryEntity categoryEntity = ProductCategoryMapper.toEntity(product.getCategoryId(),responseDto);;
             ProductEntity productEntity = ProductMapper.toEntity(id,product,categoryEntity);
             productEntity = productRepository.save(productEntity);
+            productDocumentService.update(productEntity);
             log.info("Product updated with id: {}", productEntity.getId());
             productCacheService.clearProductCache(productEntity.getId());
         }else
@@ -86,6 +90,7 @@ public class ProductServiceImpl implements ProductService {
         Optional<ProductEntity> productEntity = getProduct(id);
         if(productEntity.isPresent()){
             productRepository.deleteById(id);
+            productDocumentService.delete(id);
             log.info("Product deleted with id: {}", id);
             productCacheService.clearProductCache(id);
         }else
