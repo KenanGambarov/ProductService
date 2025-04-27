@@ -5,7 +5,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 
 
-@EnableElasticsearchRepositories(basePackages = "com.productservice.repository")
 @SpringBootApplication
 public class ProductServiceApplication {
 

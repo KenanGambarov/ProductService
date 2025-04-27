@@ -37,10 +37,10 @@ public class ProductServiceImpl implements ProductService {
     private final ProductDocumentService productDocumentService;
 
 
-    @Override
-    public Page<ProductResponseDto> getAllProducts(Pageable pageable) {
-        return productCacheService.getAllProductsFromCacheOrDB(pageable);
-    }
+//    @Override
+//    public Page<ProductResponseDto> getAllProducts(Pageable pageable) {
+//        return productCacheService.getAllProductsFromCacheOrDB(pageable);
+//    }
 
 
     @Override
@@ -98,7 +98,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private Optional<ProductEntity> getProduct(Long productId) {
-        List<ProductEntity> items = productCacheService.getProductFromCacheOrDB(productId);
+        List<ProductEntity> items = productCacheService.getProductFromCacheOrDB(productId).orElseThrow(() -> new NotFoundException(PRODUCT_NOT_FOUND.getMessage()));
 
         return items.stream()
                 .filter(item -> item.getId().equals(productId))

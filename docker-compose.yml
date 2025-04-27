@@ -76,14 +76,17 @@ services:
       - "5602:5601"
     networks:
       - ms-services
-  elasticsearch:
+  elasticsearch_log:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
-    container_name: elasticsearch
+    container_name: elasticsearch_log
     environment:
-      - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+        - discovery.type=single-node
+        - xpack.security.enabled=false
+        - xpack.security.http.ssl.enabled=false
+        - bootstrap.memory_lock=true
+        - ES_JAVA_OPTS=-Xms512m -Xmx512m
     volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
+      - elasticsearch_log_data:/usr/share/elasticsearch/data
     ports:
       - "9200:9200"
     networks:
@@ -95,16 +98,18 @@ services:
       - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
       - ./logs/product-service:/opt/app/logs/product-service
     depends_on:
-      - elasticsearch
+      - elasticsearch_log
+    environment:
+      - ELASTICSEARCH_HOST=http://elasticsearch_log:9200
     networks:
       - ms-services
-  kibana:
+  kibana_log:
     image: docker.elastic.co/kibana/kibana:8.11.1
-    container_name: kibana
+    container_name: kibana_log
     depends_on:
-      - elasticsearch
+      - elasticsearch_log
     volumes:
-      - ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+      - ./kibana/log/kibana.yml:/usr/share/kibana/config/kibana.yml
     ports:
       - "5601:5601"
     networks:
@@ -120,4 +125,5 @@ volumes:
     driver: local
   product_search_elk_data:
     driver: local
-  elasticsearch_data:
+  elasticsearch_log_data:
+    driver: local

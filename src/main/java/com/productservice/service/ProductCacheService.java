@@ -6,12 +6,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductCacheService {
 
-    Page<ProductResponseDto> getAllProductsFromCacheOrDB(Pageable pageable);
+//    Page<ProductResponseDto> getAllProductsFromCacheOrDB(Pageable pageable);
 
-    List<ProductEntity> getProductFromCacheOrDB(Long productId);
+    Optional<List<ProductEntity>> getProductFromCacheOrDB(Long productId);
 
     void clearProductCache(Long productId);
 

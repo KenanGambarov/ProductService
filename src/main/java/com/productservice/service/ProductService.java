@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface ProductService {
 
-    Page<ProductResponseDto> getAllProducts(Pageable pageable);
+//    Page<ProductResponseDto> getAllProducts(Pageable pageable);
 
     ProductResponseDto getProductById(Long id);
 

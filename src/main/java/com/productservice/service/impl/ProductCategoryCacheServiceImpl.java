@@ -27,20 +27,20 @@ public class ProductCategoryCacheServiceImpl implements ProductCategoryCacheServ
     @Override
     @CircuitBreaker(name = "redisBreaker", fallbackMethod = "fallbackGetCategory")
     @Retry(name = "redisRetry", fallbackMethod = "fallbackGetCategory")
-    public ProductCategoryEntity getProductCategory(Long categoryId) {
-
-        return cacheUtil.getOrLoad(ProductCacheConstraints.PRODUCT_CATEGORY_KEY.getKey(categoryId),
+    public Optional<ProductCategoryEntity> getProductCategory(Long categoryId) {
+        ProductCategoryEntity categoryEntity = cacheUtil.getOrLoad(ProductCacheConstraints.PRODUCT_CATEGORY_KEY.getKey(categoryId),
                 () -> {
                     log.debug("Category with id {} added to cache", categoryId);
                     Optional<ProductCategoryEntity> category = categoryRepository.findById(categoryId);
                     return category.orElseThrow(NotFoundException::new);
                 },
                 ProductCacheDurationConstraints.DAY.toDuration());
+        return Optional.ofNullable(categoryEntity);
     }
 
-    public ProductCategoryEntity fallbackGetCategory(Long categoryId, Throwable t) {
+    public Optional fallbackGetCategory(Long categoryId, Throwable t) {
         log.error("Redis not available for product category {}, falling back to DB. Error: {}",categoryId, t.getMessage());
-        return categoryRepository.findById(categoryId).orElseThrow(NotFoundException::new);
+        return Optional.empty();
     }
 
     @Override
