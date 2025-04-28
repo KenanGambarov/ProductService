@@ -59,7 +59,7 @@ public class ProductCacheServiceImpl implements ProductCacheService {
         return Optional.ofNullable(products);
     }
 
-    public Optional fallbackGetProduct(Long productId, Throwable t) {
+    public Optional<List<ProductEntity>> fallbackGetProduct(Long productId, Throwable t) {
         log.error("Redis not available for product {}, falling back to DB. Error: {}",productId, t.getMessage());
         return Optional.empty();
     }
