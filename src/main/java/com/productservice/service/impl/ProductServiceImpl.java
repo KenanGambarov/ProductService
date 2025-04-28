@@ -45,7 +45,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponseDto getProductById(Long id) {
-        ProductEntity productEntity = getProduct(id).orElseThrow(() -> new NotFoundException(PRODUCT_NOT_FOUND.getMessage()));
+        ProductEntity productEntity = findProductOrThrow(id);
         return ProductMapper.mapToDto(productEntity);
     }
 
@@ -53,10 +53,6 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void createProduct(ProductRequestDto product) {
         ProductCategoryResponseDto responseDto = categoryService.getProductCategoryById(product.getCategoryId());
-
-        if(responseDto==null){
-            throw new RuntimeException(ExceptionConstants.PRODUCT_CATEGORY_NOT_FOUND.getMessage());
-        }
         ProductCategoryEntity categoryEntity = ProductCategoryMapper.toEntity(product.getCategoryId(),responseDto);
         ProductEntity productEntity = ProductMapper.toEntity(null,product,categoryEntity);
         productEntity = productRepository.save(productEntity);
@@ -68,40 +64,28 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void updateProduct(Long id, ProductRequestDto product) {
         ProductCategoryResponseDto responseDto = categoryService.getProductCategoryById(product.getCategoryId());
-        if(responseDto==null){
-            throw new RuntimeException(ExceptionConstants.PRODUCT_CATEGORY_NOT_FOUND.getMessage());
-        }
-        Optional<ProductEntity> optionalProduct = getProduct(id);
-        if(optionalProduct.isPresent()){
-            ProductCategoryEntity categoryEntity = ProductCategoryMapper.toEntity(product.getCategoryId(),responseDto);;
-            ProductEntity productEntity = ProductMapper.toEntity(id,product,categoryEntity);
-            productEntity = productRepository.save(productEntity);
-            productDocumentService.update(productEntity);
-            log.info("Product updated with id: {}", productEntity.getId());
-            productCacheService.clearProductCache(productEntity.getId());
-        }else
-            throw new RuntimeException(PRODUCT_NOT_FOUND.getMessage());
-
-
+        findProductOrThrow(id);
+        ProductCategoryEntity categoryEntity = ProductCategoryMapper.toEntity(product.getCategoryId(),responseDto);;
+        ProductEntity productEntity = ProductMapper.toEntity(id,product,categoryEntity);
+        productEntity = productRepository.save(productEntity);
+        productDocumentService.update(productEntity);
+        log.info("Product updated with id: {}", productEntity.getId());
+        productCacheService.clearProductCache(productEntity.getId());
     }
 
     @Override
     public void deleteProduct(Long id) {
-        Optional<ProductEntity> productEntity = getProduct(id);
-        if(productEntity.isPresent()){
-            productRepository.deleteById(id);
-            productDocumentService.delete(id);
-            log.info("Product deleted with id: {}", id);
-            productCacheService.clearProductCache(id);
-        }else
-            throw new RuntimeException(PRODUCT_NOT_FOUND.getMessage());
+        findProductOrThrow(id);
+        productRepository.deleteById(id);
+        productDocumentService.delete(id);
+        log.info("Product deleted with id: {}", id);
+        productCacheService.clearProductCache(id);
     }
 
-    private Optional<ProductEntity> getProduct(Long productId) {
-        List<ProductEntity> items = productCacheService.getProductFromCacheOrDB(productId).orElseThrow(() -> new NotFoundException(PRODUCT_NOT_FOUND.getMessage()));
-
-        return items.stream()
-                .filter(item -> item.getId().equals(productId))
-                .findFirst();
+    private ProductEntity findProductOrThrow(Long productId) {
+        return productCacheService.getProductFromCacheOrDB(productId).flatMap(products -> products.stream()
+                .filter(product -> product.getId().equals(productId))
+                .findFirst()
+        ).orElseThrow(() -> new NotFoundException(PRODUCT_NOT_FOUND.getMessage()));
     }
 }
