@@ -1,4 +1,4 @@
-package com.productservice.anotation;
+package com.productservice.logger;
 
 import org.apache.logging.log4j.LogManager;
 import org.aspectj.lang.ProceedingJoinPoint;

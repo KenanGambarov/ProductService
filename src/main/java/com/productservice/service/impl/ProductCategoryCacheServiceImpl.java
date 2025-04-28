@@ -30,15 +30,17 @@ public class ProductCategoryCacheServiceImpl implements ProductCategoryCacheServ
     public Optional<ProductCategoryEntity> getProductCategory(Long categoryId) {
         ProductCategoryEntity categoryEntity = cacheUtil.getOrLoad(ProductCacheConstraints.PRODUCT_CATEGORY_KEY.getKey(categoryId),
                 () -> {
-                    log.debug("Category with id {} added to cache", categoryId);
                     Optional<ProductCategoryEntity> category = categoryRepository.findById(categoryId);
+                    if(log.isDebugEnabled()){
+                        log.debug("Category with id {} added to cache", categoryId);
+                    }
                     return category.orElseThrow(NotFoundException::new);
                 },
                 ProductCacheDurationConstraints.DAY.toDuration());
         return Optional.ofNullable(categoryEntity);
     }
 
-    public Optional fallbackGetCategory(Long categoryId, Throwable t) {
+    public Optional<ProductCategoryEntity> fallbackGetCategory(Long categoryId, Throwable t) {
         log.error("Redis not available for product category {}, falling back to DB. Error: {}",categoryId, t.getMessage());
         return Optional.empty();
     }
@@ -48,7 +50,10 @@ public class ProductCategoryCacheServiceImpl implements ProductCategoryCacheServ
     @Retry(name = "redisRetry", fallbackMethod = "fallbackClearProductCategoryCache")
     public void clearProductCategoryCache(Long categoryId) {
         cacheUtil.deleteFromCache(ProductCacheConstraints.PRODUCT_CATEGORY_KEY.getKey(categoryId));
-        log.debug("Cache cleared for category {}", categoryId);
+        if(log.isDebugEnabled()){
+            log.debug("Cache cleared for category {}", categoryId);
+        }
+
     }
 
     public void fallbackClearProductCategoryCache(Long productId, Throwable t) {

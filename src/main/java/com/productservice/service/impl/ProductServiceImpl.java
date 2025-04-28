@@ -36,13 +36,6 @@ public class ProductServiceImpl implements ProductService {
     private final ProductCacheService productCacheService;
     private final ProductDocumentService productDocumentService;
 
-
-//    @Override
-//    public Page<ProductResponseDto> getAllProducts(Pageable pageable) {
-//        return productCacheService.getAllProductsFromCacheOrDB(pageable);
-//    }
-
-
     @Override
     public ProductResponseDto getProductById(Long id) {
         ProductEntity productEntity = findProductOrThrow(id);
@@ -57,7 +50,7 @@ public class ProductServiceImpl implements ProductService {
         ProductEntity productEntity = ProductMapper.toEntity(null,product,categoryEntity);
         productEntity = productRepository.save(productEntity);
         productDocumentService.index(productEntity);
-        log.info("Product created with id: {}", productEntity.getId());
+        log.info("Product created with id: {}, with name: {}", productEntity.getId(), productEntity.getName());
         productCacheService.clearProductCache(productEntity.getId());
     }
 

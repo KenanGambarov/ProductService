@@ -155,7 +155,7 @@ public class ProductDocumentServiceImpl implements ProductDocumentService {
 
             BulkResponse result = elasticsearchClient.bulk(br.build());
             if (result.errors()) {
-                System.err.println("Bulk indexing had errors");
+                log.error("Bulk indexing had errors");
                 // log errors if needed
             }
         } catch (IOException e) {

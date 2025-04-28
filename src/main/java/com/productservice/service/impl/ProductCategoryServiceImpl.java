@@ -3,6 +3,7 @@ package com.productservice.service.impl;
 import com.productservice.dto.request.ProductCategoryRequestDto;
 import com.productservice.dto.response.ProductCategoryResponseDto;
 import com.productservice.entity.ProductCategoryEntity;
+import com.productservice.entity.ProductEntity;
 import com.productservice.exception.ExceptionConstants;
 import com.productservice.exception.NotFoundException;
 import com.productservice.mapper.ProductCategoryMapper;
@@ -27,7 +28,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
 
     @Override
     public ProductCategoryResponseDto getProductCategoryById(Long id) {
-        ProductCategoryEntity category = categoryCacheService.getProductCategory(id).orElseThrow(() -> new NotFoundException(PRODUCT_CATEGORY_NOT_FOUND.getMessage()));
+        ProductCategoryEntity category = findProductCategoryOrThrow(id);
         return ProductCategoryResponseDto.builder()
                 .name(category.getName())
                 .build();
@@ -43,8 +44,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
 
     @Override
     public void updateProductCategory(Long id, ProductCategoryRequestDto requestDto) {
-        ProductCategoryEntity category = categoryCacheService.getProductCategory(id).orElseThrow(() -> new NotFoundException(PRODUCT_NOT_FOUND.getMessage()));
-//        category = ProductCategoryMapper.toEntity(id,requestDto);
+        ProductCategoryEntity category = findProductCategoryOrThrow(id);
         category.setName(requestDto.getName());
         categoryRepository.save(category);
         productSearchService.reindex(category.getName());
@@ -54,12 +54,16 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
 
     @Override
     public void deleteProductCategory(Long id) {
-        categoryCacheService.getProductCategory(id).orElseThrow(() -> new NotFoundException(PRODUCT_NOT_FOUND.getMessage()));
+        findProductCategoryOrThrow(id);
         categoryRepository.deleteById(id);
         log.info("product category with id {} deleted", id);
         categoryCacheService.clearProductCategoryCache(id);
 
     }
 
+    private ProductCategoryEntity findProductCategoryOrThrow(Long productId) {
+        return categoryCacheService.getProductCategory(productId)
+                .orElseThrow(() -> new NotFoundException(PRODUCT_NOT_FOUND.getMessage()));
+    }
 
 }

@@ -28,39 +28,23 @@ public class ProductCacheServiceImpl implements ProductCacheService {
     private final CacheUtil cacheUtil;
     private final ProductRepository productRepository;
 
-//    @Override
-//    @CircuitBreaker(name = "redisBreaker", fallbackMethod = "fallbackGetAllProducts")
-//    @Retry(name = "redisRetry", fallbackMethod = "fallbackGetAllProducts")
-//    public Page<ProductResponseDto> getAllProductsFromCacheOrDB(Pageable pageable) {
-//        String cacheKey = ProductCacheConstraints.PRODUCT_LIST_KEY.getKey(pageable.getPageNumber(), pageable.getPageSize());
-//
-//        return cacheUtil.getOrLoad(
-//                cacheKey,
-//                () -> {
-//                    log.debug("Loading product page {} from DB and caching", pageable.getPageNumber());
-//                    return productRepository.findAllBy(pageable).map(ProductMapper::mapToDto);
-//                },
-//                ProductCacheDurationConstraints.DAY.toDuration()
-//        );
-//    }
-//
-//    public Page<ProductResponseDto> fallbackGetAllProducts(Pageable pageable, Throwable t) {
-//        log.error("Redis not available for pageable products, falling back to DB. Error: {}", t.getMessage());
-//        return productRepository.findAllBy(pageable).map(ProductMapper::mapToDto);
-//    }
-
     @Override
     @CircuitBreaker(name = "redisBreaker", fallbackMethod = "fallbackGetProduct")
     @Retry(name = "redisRetry", fallbackMethod = "fallbackGetProduct")
-    public Optional<List<ProductEntity>> getProductFromCacheOrDB(Long productId){
+    public Optional<List<ProductEntity>> getProductFromCacheOrDB(Long productId) {
         List<ProductEntity> products = cacheUtil.getOrLoad(ProductCacheConstraints.PRODUCT_KEY.getKey(productId),
-                () ->{log.debug("Product with id {} added to cache", productId); return productRepository.findAllById(productId);},
+                () -> {
+                    if (log.isDebugEnabled() ) {
+                        log.debug("Product with id {} added to cache", productId);
+                    }
+                    return productRepository.findAllById(productId);
+                },
                 ProductCacheDurationConstraints.DAY.toDuration());
         return Optional.ofNullable(products);
     }
 
     public Optional<List<ProductEntity>> fallbackGetProduct(Long productId, Throwable t) {
-        log.error("Redis not available for product {}, falling back to DB. Error: {}",productId, t.getMessage());
+        log.error("Redis not available for product {}, falling back to DB. Error: {}", productId, t.getMessage());
         return Optional.empty();
     }
 
@@ -69,7 +53,10 @@ public class ProductCacheServiceImpl implements ProductCacheService {
     @Retry(name = "redisRetry", fallbackMethod = "fallbackClearProductCache")
     public void clearProductCache(Long productId) {
         cacheUtil.deleteFromCache(ProductCacheConstraints.PRODUCT_KEY.getKey(productId));
-        log.debug("Cache cleared for product {}", productId);
+        if (log.isDebugEnabled() ) {
+            log.debug("Cache cleared for product {}", productId);
+        }
+
     }
 
     public void fallbackClearProductCache(Long productId, Throwable t) {

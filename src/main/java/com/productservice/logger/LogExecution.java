@@ -1,4 +1,4 @@
-package com.productservice.anotation;
+package com.productservice.logger;
 
 import java.lang.annotation.*;
 
