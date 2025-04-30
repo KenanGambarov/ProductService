@@ -63,19 +63,16 @@ databaseChangeLog:
               - column:
                   name: path
                   type: VARCHAR(500)
-                  autoIncrement: true
                   constraints:
                     nullable: false
               - column:
                   name: level
                   type: INT
-                  autoIncrement: true
                   constraints:
                     nullable: false
               - column:
                   name: is_active
                   type: BOOLEAN
-                  autoIncrement: true
                   constraints:
                     nullable: false
 
