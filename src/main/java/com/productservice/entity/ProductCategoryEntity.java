@@ -23,6 +23,25 @@ public class ProductCategoryEntity implements Serializable {
 
     private String name;
 
+    private Long parentId; // null olanda root-dir
+
+    private String path; // Məs: /1/3/7
+
+    private Integer level; // Root = 0, Altlar 1, 2 və s.
+
+    private Boolean isActive;
+
     @OneToMany(mappedBy = "category")
     private List<ProductEntity> products;
+
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    private Long id;
+//
+//    private String name;
+//
+//    @OneToMany(mappedBy = "category")
+//    private List<ProductEntity> products;
+
+
 }

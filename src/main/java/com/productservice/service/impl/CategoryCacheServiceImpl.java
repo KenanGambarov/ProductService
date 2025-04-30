@@ -2,8 +2,8 @@ package com.productservice.service.impl;
 
 import com.productservice.entity.ProductCategoryEntity;
 import com.productservice.exception.NotFoundException;
-import com.productservice.repository.ProductCategoryRepository;
-import com.productservice.service.ProductCategoryCacheService;
+import com.productservice.repository.CategoryRepository;
+import com.productservice.service.CategoryCacheService;
 import com.productservice.util.CacheUtil;
 import com.productservice.util.constraints.ProductCacheConstraints;
 import com.productservice.util.constraints.ProductCacheDurationConstraints;
@@ -18,10 +18,10 @@ import java.util.Optional;
 @Slf4j
 @AllArgsConstructor
 @Service
-public class ProductCategoryCacheServiceImpl implements ProductCategoryCacheService {
+public class CategoryCacheServiceImpl implements CategoryCacheService {
 
     private final CacheUtil cacheUtil;
-    private final ProductCategoryRepository categoryRepository;
+    private final CategoryRepository categoryRepository;
 
 
     @Override

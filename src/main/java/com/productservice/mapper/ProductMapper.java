@@ -1,7 +1,7 @@
 package com.productservice.mapper;
 
 import com.productservice.dto.request.ProductRequestDto;
-import com.productservice.dto.response.ProductCategoryResponseDto;
+import com.productservice.dto.response.CategoryResponseDto;
 import com.productservice.dto.response.ProductResponseDto;
 import com.productservice.entity.ProductCategoryEntity;
 import com.productservice.entity.ProductEntity;
@@ -27,7 +27,7 @@ public class ProductMapper {
     }
 
     public static ProductResponseDto mapToDto(ProductEntity e) {
-        ProductCategoryResponseDto categoryDto = ProductCategoryResponseDto.builder()
+        CategoryResponseDto categoryDto = CategoryResponseDto.builder()
                 .name(e.getCategory().getName())
                 .build();
 

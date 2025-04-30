@@ -1,9 +1,6 @@
 package com.productservice.service.impl;
 
-import com.productservice.dto.response.ProductResponseDto;
 import com.productservice.entity.ProductEntity;
-import com.productservice.mapper.ProductCategoryMapper;
-import com.productservice.mapper.ProductMapper;
 import com.productservice.repository.ProductRepository;
 import com.productservice.service.ProductCacheService;
 import com.productservice.util.CacheUtil;
@@ -13,8 +10,6 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

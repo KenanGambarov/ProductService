@@ -55,6 +55,29 @@ databaseChangeLog:
                   type: VARCHAR(255)
                   constraints:
                     nullable: false
+              - column:
+                  name: parent_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: path
+                  type: VARCHAR(500)
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: level
+                  type: INT
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_active
+                  type: BOOLEAN
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
 
         - addForeignKeyConstraint:
             constraintName: fk_product_category

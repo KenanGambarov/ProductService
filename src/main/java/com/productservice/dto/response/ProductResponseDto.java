@@ -15,6 +15,6 @@ public class ProductResponseDto implements Serializable {
 
     private Double price;
 
-    private ProductCategoryResponseDto category;
+    private CategoryResponseDto category;
 
 }
