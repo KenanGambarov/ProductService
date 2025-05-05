@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -23,6 +24,27 @@ public class CategoryCacheServiceImpl implements CategoryCacheService {
     private final CacheUtil cacheUtil;
     private final CategoryRepository categoryRepository;
 
+
+//    @Override
+//    @CircuitBreaker(name = "redisBreaker", fallbackMethod = "fallbackCategoryTree")
+//    @Retry(name = "redisRetry", fallbackMethod = "fallbackCategoryTree")
+//    public Optional<ProductCategoryEntity> getCategoryTree(Long categoryId) {
+//        ProductCategoryEntity categoryEntity = cacheUtil.getOrLoad(ProductCacheConstraints.PRODUCT_CATEGORY_KEY.getKey(categoryId),
+//                () -> {
+//                    List<ProductCategoryEntity> category = categoryRepository.findAll();
+//                    if(log.isDebugEnabled()){
+//                        log.debug("Category with id {} added to cache", categoryId);
+//                    }
+//                    return category.stream()..orElseThrow(NotFoundException::new);
+//                },
+//                ProductCacheDurationConstraints.DAY.toDuration());
+//        return Optional.ofNullable(categoryEntity);
+//    }
+//
+//    public Optional<ProductCategoryEntity> fallbackCategoryTree(Long categoryId, Throwable t) {
+//        log.error("Redis not available for product category {}, falling back to DB. Error: {}",categoryId, t.getMessage());
+//        return Optional.empty();
+//    }
 
     @Override
     @CircuitBreaker(name = "redisBreaker", fallbackMethod = "fallbackGetCategory")

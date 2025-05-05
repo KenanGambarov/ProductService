@@ -17,9 +17,9 @@ public class CategoryRequestDto {
 
     private Long parentId; // null olanda root-dir
 
-    private String path; // Məs: /1/3/7
-
-    private Integer level; // Root = 0, Altlar 1, 2 və s.
+//    private String path; // Məs: /1/3/7
+//
+//    private Integer level; // Root = 0, Altlar 1, 2 və s.
 
     private Boolean isActive;
 

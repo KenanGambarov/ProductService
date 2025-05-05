@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.productservice.exception.ExceptionConstants.PRODUCT_NOT_FOUND;
+import static com.productservice.exception.ExceptionConstants.*;
 
 @Slf4j
 @AllArgsConstructor
@@ -40,27 +40,9 @@ public class CategoryServiceImpl implements CategoryService {
     public List<CategoryTreeResponseDto> getCategoryTree() {
         List<ProductCategoryEntity> allCategories = categoryRepository.findAll();
 
-        Map<Long, CategoryTreeResponseDto> dtoMap = allCategories.stream()
-                .collect(Collectors.toMap(
-                        ProductCategoryEntity::getId,
-                        cat -> new CategoryTreeResponseDto(cat.getId(), cat.getName(), new ArrayList<>())
-                ));
+        Map<Long, CategoryTreeResponseDto> dtoMap = CategoryMapper.mapToDto(allCategories);
 
-        List<CategoryTreeResponseDto> rootCategories = new ArrayList<>();
-
-        for (ProductCategoryEntity category : allCategories) {
-            CategoryTreeResponseDto dto = dtoMap.get(category.getId());
-            if (category.getParentId() == null) {
-                rootCategories.add(dto);
-            } else {
-                CategoryTreeResponseDto parentDto = dtoMap.get(category.getParentId());
-                if (parentDto != null) {
-                    parentDto.getChildren().add(dto);
-                }
-            }
-        }
-
-        return rootCategories;
+        return CategoryMapper.buildTree(allCategories,dtoMap);
     }
 
 //    @Override
@@ -84,20 +66,23 @@ public class CategoryServiceImpl implements CategoryService {
     public void createProductCategory(CategoryRequestDto requestDto) {
         ProductCategoryEntity category = CategoryMapper.toEntity(requestDto,true);
         enrichCategoryWithParent(category);
-        categoryRepository.save(category);
         ProductCategoryEntity saved = categoryRepository.save(category);
-
-        saved.setPath(saved.getPath() + "/" + saved.getId());
+        categoryRepository.save(category);
+        String parentPath = "";
+        if (saved.getParentId() != null) {
+            ProductCategoryEntity parent = findProductCategoryOrThrow(category.getParentId());
+            parentPath = parent.getPath();
+        }
+        saved.setPath(parentPath + "/" + saved.getId());
         categoryRepository.save(saved);
+        categoryCacheService.clearProductCategoryCache(category.getId());
     }
 
     private void enrichCategoryWithParent(ProductCategoryEntity category) {
         if (category.getParentId() != null) {
-            ProductCategoryEntity parent = categoryRepository.findById(category.getParentId())
-                    .orElseThrow(() -> new NotFoundException("Parent not found"));
-
-            category.setPath(parent.getPath() + "/" + parent.getId());
+            ProductCategoryEntity parent = findProductCategoryOrThrow(category.getParentId());
             category.setLevel(parent.getLevel() + 1);
+//            category.setPath(parent.getPath() + "/" + parent.getId());
         } else {
             category.setPath("");
             category.setLevel(0);
@@ -131,9 +116,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     }
 
-    private ProductCategoryEntity findProductCategoryOrThrow(Long productId) {
-        return categoryCacheService.getProductCategory(productId)
-                .orElseThrow(() -> new NotFoundException(PRODUCT_NOT_FOUND.getMessage()));
+    private ProductCategoryEntity findProductCategoryOrThrow(Long categoryId) {
+        return categoryCacheService.getProductCategory(categoryId)
+                .orElseThrow(() -> new NotFoundException(PRODUCT_CATEGORY_NOT_FOUND.getMessage()));
     }
 
 }
