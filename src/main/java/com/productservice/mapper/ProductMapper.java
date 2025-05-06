@@ -3,12 +3,12 @@ package com.productservice.mapper;
 import com.productservice.dto.request.ProductRequestDto;
 import com.productservice.dto.response.CategoryResponseDto;
 import com.productservice.dto.response.ProductResponseDto;
-import com.productservice.entity.ProductCategoryEntity;
+import com.productservice.entity.CategoryEntity;
 import com.productservice.entity.ProductEntity;
 
 public class ProductMapper {
 
-    public static ProductEntity toEntity(Long id,ProductRequestDto product, ProductCategoryEntity categoryEntity){
+    public static ProductEntity toEntity(Long id,ProductRequestDto product, CategoryEntity categoryEntity){
         if (id==null)
             return ProductEntity.builder()
                 .name(product.getName())

@@ -1,7 +1,9 @@
 package com.productservice.service.impl;
 
-import com.productservice.entity.ProductCategoryEntity;
+import com.productservice.dto.response.CategoryTreeResponseDto;
+import com.productservice.entity.CategoryEntity;
 import com.productservice.exception.NotFoundException;
+import com.productservice.mapper.CategoryMapper;
 import com.productservice.repository.CategoryRepository;
 import com.productservice.service.CategoryCacheService;
 import com.productservice.util.CacheUtil;
@@ -14,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -28,31 +31,42 @@ public class CategoryCacheServiceImpl implements CategoryCacheService {
 //    @Override
 //    @CircuitBreaker(name = "redisBreaker", fallbackMethod = "fallbackCategoryTree")
 //    @Retry(name = "redisRetry", fallbackMethod = "fallbackCategoryTree")
-//    public Optional<ProductCategoryEntity> getCategoryTree(Long categoryId) {
-//        ProductCategoryEntity categoryEntity = cacheUtil.getOrLoad(ProductCacheConstraints.PRODUCT_CATEGORY_KEY.getKey(categoryId),
-//                () -> {
-//                    List<ProductCategoryEntity> category = categoryRepository.findAll();
-//                    if(log.isDebugEnabled()){
-//                        log.debug("Category with id {} added to cache", categoryId);
-//                    }
-//                    return category.stream()..orElseThrow(NotFoundException::new);
-//                },
+//    public Optional<List<CategoryEntity> > getCategoryTree() {
+//        List<CategoryEntity>  categoryEntity = cacheUtil.getOrLoad(ProductCacheConstraints.CATEGORY_TREE_KEY.getKey(),
+//                categoryRepository::findAll,
 //                ProductCacheDurationConstraints.DAY.toDuration());
 //        return Optional.ofNullable(categoryEntity);
 //    }
-//
-//    public Optional<ProductCategoryEntity> fallbackCategoryTree(Long categoryId, Throwable t) {
-//        log.error("Redis not available for product category {}, falling back to DB. Error: {}",categoryId, t.getMessage());
-//        return Optional.empty();
-//    }
+
+    @Override
+    @CircuitBreaker(name = "redisBreaker", fallbackMethod = "fallbackCategoryTree")
+    @Retry(name = "redisRetry", fallbackMethod = "fallbackCategoryTree")
+    public Optional<List<CategoryTreeResponseDto>> getCategoryTree() {
+        List<CategoryTreeResponseDto> categories = cacheUtil.getOrLoad(ProductCacheConstraints.CATEGORY_TREE_KEY.getKey(),
+                this::buildAndCacheCategoryTree,
+                ProductCacheDurationConstraints.DAY.toDuration());
+        return Optional.ofNullable(categories);
+    }
+
+    private List<CategoryTreeResponseDto> buildAndCacheCategoryTree() {
+        List<CategoryEntity> allCategories = categoryRepository.findAll();
+        Map<Long, CategoryTreeResponseDto> dtoMap = CategoryMapper.mapToDto(allCategories);
+        return CategoryMapper.buildTree(allCategories, dtoMap);
+    }
+
+
+    public Optional<CategoryEntity> fallbackCategoryTree(Long categoryId, Throwable t) {
+        log.error("Redis not available for product category tree {}, falling back to DB. Error: {}",categoryId, t.getMessage());
+        return Optional.empty();
+    }
 
     @Override
     @CircuitBreaker(name = "redisBreaker", fallbackMethod = "fallbackGetCategory")
     @Retry(name = "redisRetry", fallbackMethod = "fallbackGetCategory")
-    public Optional<ProductCategoryEntity> getProductCategory(Long categoryId) {
-        ProductCategoryEntity categoryEntity = cacheUtil.getOrLoad(ProductCacheConstraints.PRODUCT_CATEGORY_KEY.getKey(categoryId),
+    public Optional<CategoryEntity> getCategory(Long categoryId) {
+        CategoryEntity categoryEntity = cacheUtil.getOrLoad(ProductCacheConstraints.CATEGORY_KEY.getKey(categoryId),
                 () -> {
-                    Optional<ProductCategoryEntity> category = categoryRepository.findById(categoryId);
+                    Optional<CategoryEntity> category = categoryRepository.findById(categoryId);
                     if(log.isDebugEnabled()){
                         log.debug("Category with id {} added to cache", categoryId);
                     }
@@ -62,23 +76,38 @@ public class CategoryCacheServiceImpl implements CategoryCacheService {
         return Optional.ofNullable(categoryEntity);
     }
 
-    public Optional<ProductCategoryEntity> fallbackGetCategory(Long categoryId, Throwable t) {
+    public Optional<CategoryEntity> fallbackGetCategory(Long categoryId, Throwable t) {
         log.error("Redis not available for product category {}, falling back to DB. Error: {}",categoryId, t.getMessage());
         return Optional.empty();
     }
 
     @Override
-    @CircuitBreaker(name = "redisBreaker", fallbackMethod = "fallbackClearProductCategoryCache")
-    @Retry(name = "redisRetry", fallbackMethod = "fallbackClearProductCategoryCache")
-    public void clearProductCategoryCache(Long categoryId) {
-        cacheUtil.deleteFromCache(ProductCacheConstraints.PRODUCT_CATEGORY_KEY.getKey(categoryId));
+    @CircuitBreaker(name = "redisBreaker", fallbackMethod = "fallbackClearCategoryCache")
+    @Retry(name = "redisRetry", fallbackMethod = "fallbackClearCategoryCache")
+    public void clearCategoryCache(Long categoryId) {
+        cacheUtil.deleteFromCache(ProductCacheConstraints.CATEGORY_KEY.getKey(categoryId));
         if(log.isDebugEnabled()){
             log.debug("Cache cleared for category {}", categoryId);
         }
 
     }
 
-    public void fallbackClearProductCategoryCache(Long productId, Throwable t) {
+    public void fallbackClearCategoryCache(Long productId, Throwable t) {
         log.warn("Redis not available to clear cache for product {}, ignoring. Error: {}", productId, t.getMessage());
+    }
+
+    @Override
+    @CircuitBreaker(name = "redisBreaker", fallbackMethod = "fallbackClearCategoryTreeCache")
+    @Retry(name = "redisRetry", fallbackMethod = "fallbackClearCategoryTreeCache")
+    public void clearCategoryTreeCache(String key) {
+        cacheUtil.deleteFromCache(key);
+        if(log.isDebugEnabled()){
+            log.debug("Cache cleared for category tree {}", key);
+        }
+
+    }
+
+    public void fallbackClearCategoryTreeCache(String productId, Throwable t) {
+        log.warn("Redis not available to clear cache for product tree {}, ignoring. Error: {}", productId, t.getMessage());
     }
 }

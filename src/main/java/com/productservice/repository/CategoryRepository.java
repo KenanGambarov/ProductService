@@ -1,16 +1,18 @@
 package com.productservice.repository;
 
-import com.productservice.entity.ProductCategoryEntity;
+import com.productservice.entity.CategoryEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface CategoryRepository extends JpaRepository<ProductCategoryEntity,Long> {
+public interface CategoryRepository extends JpaRepository<CategoryEntity,Long> {
 
-    List<ProductCategoryEntity> findByPathStartingWith(String path);
+    List<CategoryEntity> findByPathStartingWith(String path);
+//
+//    @Query("SELECT c FROM CategoryEntity c WHERE c.parentId IS NULL")
+//    List<CategoryEntity> findRootCategories();
 
-    @Query("SELECT c FROM ProductCategoryEntity c WHERE c.parentId IS NULL")
-    List<ProductCategoryEntity> findRootCategories();
+    List<CategoryEntity> findByParentId(Long id);
 
 }

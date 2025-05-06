@@ -20,7 +20,7 @@ public class CategoryController {
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public CategoryResponseDto getProductCategoryById(@PathVariable("id") Long id) {
-        return categoryService.getProductCategoryById(id);
+        return categoryService.getCategoryById(id);
     }
 
     @GetMapping("")
@@ -32,19 +32,19 @@ public class CategoryController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void createProductCategory(@RequestBody CategoryRequestDto categoryRequestDto) {
-        categoryService.createProductCategory(categoryRequestDto);
+        categoryService.createCategory(categoryRequestDto);
     }
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public void updateProductCategory(@PathVariable("id") Long id, @RequestBody CategoryRequestDto categoryRequestDto) {
-        categoryService.updateProductCategory(id,categoryRequestDto);
+        categoryService.updateCategory(id,categoryRequestDto);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteProductCategory(@PathVariable("id") Long id) {
-        categoryService.deleteProductCategory(id);
+        categoryService.deleteCategory(id);
     }
 
 }

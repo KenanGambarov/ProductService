@@ -3,20 +3,23 @@ package com.productservice.service.impl;
 import com.productservice.dto.request.CategoryRequestDto;
 import com.productservice.dto.response.CategoryResponseDto;
 import com.productservice.dto.response.CategoryTreeResponseDto;
-import com.productservice.entity.ProductCategoryEntity;
+import com.productservice.entity.CategoryEntity;
 import com.productservice.exception.NotFoundException;
 import com.productservice.mapper.CategoryMapper;
 import com.productservice.repository.CategoryRepository;
 import com.productservice.service.CategoryCacheService;
 import com.productservice.service.CategoryService;
+import com.productservice.util.CacheUtil;
+import com.productservice.util.CategoryTreeUtil;
+import com.productservice.util.constraints.ProductCacheConstraints;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.productservice.exception.ExceptionConstants.*;
@@ -29,96 +32,104 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryCacheService categoryCacheService;
     private final CategoryRepository categoryRepository;
     private final ProductDocumentServiceImpl productSearchService;
+    private final CacheUtil cacheUtil;
 
     @Override
-    public CategoryResponseDto getProductCategoryById(Long id) {
-        ProductCategoryEntity category = findProductCategoryOrThrow(id);
+    public CategoryResponseDto getCategoryById(Long id) {
+        CategoryEntity category = findCategoryOrThrow(id);
         return CategoryMapper.toResponseDto(category);
     }
 
     @Override
     public List<CategoryTreeResponseDto> getCategoryTree() {
-        List<ProductCategoryEntity> allCategories = categoryRepository.findAll();
-
-        Map<Long, CategoryTreeResponseDto> dtoMap = CategoryMapper.mapToDto(allCategories);
-
-        return CategoryMapper.buildTree(allCategories,dtoMap);
-    }
-
-//    @Override
-//    public CategoryResponseDto getProductCategoryById(Long id) {
-//        ProductCategoryEntity category = findProductCategoryOrThrow(id);
-//        return CategoryResponseDto.builder()
-//                .name(category.getName())
-//                .build();
-//    }
-
-    @Override
-    public List<CategoryResponseDto> getSubcategories(Long categoryId) {
-        ProductCategoryEntity category = findProductCategoryOrThrow(categoryId);
-
-        String pathPrefix = category.getPath() + "/" + category.getId();
-        List<ProductCategoryEntity> subcategories = categoryRepository.findByPathStartingWith(pathPrefix);
-        return subcategories.stream().map(CategoryMapper::toResponseDto).collect(Collectors.toList());
+        return getCategoryTreeOrThrow();
     }
 
     @Override
-    public void createProductCategory(CategoryRequestDto requestDto) {
-        ProductCategoryEntity category = CategoryMapper.toEntity(requestDto,true);
+    public List<CategoryTreeResponseDto> getSubcategories(Long parentId) {
+        List<CategoryTreeResponseDto> categoryTree = getCategoryTreeOrThrow();
+        return CategoryTreeUtil.findSubcategories(categoryTree, parentId);
+    }
+
+    @Override
+    public void createCategory(CategoryRequestDto requestDto) {
+        CategoryEntity category = CategoryMapper.toEntity(requestDto,true);
         enrichCategoryWithParent(category);
-        ProductCategoryEntity saved = categoryRepository.save(category);
+        CategoryEntity saved = categoryRepository.save(category);
         categoryRepository.save(category);
         String parentPath = "";
         if (saved.getParentId() != null) {
-            ProductCategoryEntity parent = findProductCategoryOrThrow(category.getParentId());
+            CategoryEntity parent = findCategoryOrThrow(category.getParentId());
             parentPath = parent.getPath();
         }
         saved.setPath(parentPath + "/" + saved.getId());
         categoryRepository.save(saved);
-        categoryCacheService.clearProductCategoryCache(category.getId());
+        categoryCacheService.clearCategoryCache(category.getId());
+        categoryCacheService.clearCategoryTreeCache(ProductCacheConstraints.CATEGORY_TREE_KEY.getKey());
     }
 
-    private void enrichCategoryWithParent(ProductCategoryEntity category) {
+    private void enrichCategoryWithParent(CategoryEntity category) {
         if (category.getParentId() != null) {
-            ProductCategoryEntity parent = findProductCategoryOrThrow(category.getParentId());
+            CategoryEntity parent = findCategoryOrThrow(category.getParentId());
             category.setLevel(parent.getLevel() + 1);
-//            category.setPath(parent.getPath() + "/" + parent.getId());
         } else {
             category.setPath("");
             category.setLevel(0);
         }
     }
 
-//    @Override
-//    public void createProductCategory(ProductCategoryRequestDto requestDto) {
-//        ProductCategoryEntity category = ProductCategoryMapper.toEntity(null, requestDto);
-//        category = categoryRepository.save(category);
-//        log.info("product category created with id {}", category.getId());
-//        categoryCacheService.clearProductCategoryCache(category.getId());
-//    }
+    @Transactional
+    public void updateCategory(Long id, CategoryRequestDto dto) {
+        CategoryEntity category = findCategoryOrThrow(id);
 
-    @Override
-    public void updateProductCategory(Long id, CategoryRequestDto requestDto) {
-        ProductCategoryEntity category = findProductCategoryOrThrow(id);
-        category.setName(requestDto.getName());
+        boolean parentChanged = !Objects.equals(category.getParentId(), dto.getParentId());
+
+        category.setName(dto.getName());
+        category.setParentId(dto.getParentId());
+
+        if (parentChanged) {
+            updateCategoryHierarchy(category);
+        }
+
         categoryRepository.save(category);
-        productSearchService.reindex(category.getName());
-        log.info("product category with id {} updated", id);
-        categoryCacheService.clearProductCategoryCache(category.getId());
+        categoryCacheService.clearCategoryTreeCache(ProductCacheConstraints.CATEGORY_TREE_KEY.getKey());
+    }
+
+    private void updateCategoryHierarchy(CategoryEntity category) {
+        enrichCategoryWithParent(category);
+        updateChildrenHierarchy(category);
+    }
+
+    private void updateChildrenHierarchy(CategoryEntity parentCategory) {
+        List<CategoryEntity> children = categoryRepository.findByParentId(parentCategory.getId());
+
+        for (CategoryEntity child : children) {
+            child.setPath(parentCategory.getPath() + "/" + parentCategory.getId());
+            child.setLevel(parentCategory.getLevel() + 1);
+            categoryRepository.save(child);
+            updateChildrenHierarchy(child);
+        }
     }
 
     @Override
-    public void deleteProductCategory(Long id) {
-        findProductCategoryOrThrow(id);
+    public void deleteCategory(Long id) {
+        findCategoryOrThrow(id);
         categoryRepository.deleteById(id);
         log.info("product category with id {} deleted", id);
-        categoryCacheService.clearProductCategoryCache(id);
+        categoryCacheService.clearCategoryCache(id);
 
     }
 
-    private ProductCategoryEntity findProductCategoryOrThrow(Long categoryId) {
-        return categoryCacheService.getProductCategory(categoryId)
+    private CategoryEntity findCategoryOrThrow(Long categoryId) {
+        return categoryCacheService.getCategory(categoryId)
                 .orElseThrow(() -> new NotFoundException(PRODUCT_CATEGORY_NOT_FOUND.getMessage()));
     }
+
+    private List<CategoryTreeResponseDto> getCategoryTreeOrThrow() {
+        return categoryCacheService.getCategoryTree()
+                .orElseThrow(() -> new NotFoundException(PRODUCT_CATEGORY_NOT_FOUND.getMessage()));
+    }
+
+
 
 }

@@ -3,7 +3,7 @@ package com.productservice.service.impl;
 import com.productservice.dto.request.ProductRequestDto;
 import com.productservice.dto.response.CategoryResponseDto;
 import com.productservice.dto.response.ProductResponseDto;
-import com.productservice.entity.ProductCategoryEntity;
+import com.productservice.entity.CategoryEntity;
 import com.productservice.entity.ProductEntity;
 import com.productservice.exception.NotFoundException;
 import com.productservice.mapper.CategoryMapper;
@@ -39,8 +39,8 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     @Override
     public void createProduct(ProductRequestDto product) {
-        CategoryResponseDto responseDto = categoryService.getProductCategoryById(product.getCategoryId());
-        ProductCategoryEntity categoryEntity = CategoryMapper.toEntity(product.getCategoryId(),responseDto);
+        CategoryResponseDto responseDto = categoryService.getCategoryById(product.getCategoryId());
+        CategoryEntity categoryEntity = CategoryMapper.toEntity(product.getCategoryId(),responseDto);
         ProductEntity productEntity = ProductMapper.toEntity(null,product,categoryEntity);
         productEntity = productRepository.save(productEntity);
         productDocumentService.index(productEntity);
@@ -50,9 +50,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void updateProduct(Long id, ProductRequestDto product) {
-        CategoryResponseDto responseDto = categoryService.getProductCategoryById(product.getCategoryId());
+        CategoryResponseDto responseDto = categoryService.getCategoryById(product.getCategoryId());
         findProductOrThrow(id);
-        ProductCategoryEntity categoryEntity = CategoryMapper.toEntity(product.getCategoryId(),responseDto);;
+        CategoryEntity categoryEntity = CategoryMapper.toEntity(product.getCategoryId(),responseDto);;
         ProductEntity productEntity = ProductMapper.toEntity(id,product,categoryEntity);
         productEntity = productRepository.save(productEntity);
         productDocumentService.update(productEntity);

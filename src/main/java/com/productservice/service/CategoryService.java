@@ -8,17 +8,17 @@ import java.util.List;
 
 public interface CategoryService {
 
-    CategoryResponseDto getProductCategoryById(Long id);
+    CategoryResponseDto getCategoryById(Long id);
 
     List<CategoryTreeResponseDto> getCategoryTree();
 
-    List<CategoryResponseDto> getSubcategories(Long categoryId);
+    List<CategoryTreeResponseDto> getSubcategories(Long parentId);
 
-    void createProductCategory(CategoryRequestDto requestDto);
+    void createCategory(CategoryRequestDto requestDto);
 
-    void updateProductCategory(Long id, CategoryRequestDto requestDto);
+    void updateCategory(Long id, CategoryRequestDto requestDto);
 
-    void deleteProductCategory(Long id);
+    void deleteCategory(Long id);
 
 
 }
