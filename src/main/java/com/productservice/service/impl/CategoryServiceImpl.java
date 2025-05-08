@@ -92,6 +92,7 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         categoryRepository.save(category);
+        productSearchService.reindex(category.getName());
         categoryCacheService.clearCategoryTreeCache(ProductCacheConstraints.CATEGORY_TREE_KEY.getKey());
     }
 
@@ -101,7 +102,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     private void updateChildrenHierarchy(CategoryEntity parentCategory) {
-        List<CategoryEntity> children = categoryRepository.findByParentId(parentCategory.getId());
+        List<CategoryEntity> children = getCategoryByParentOrThrow(parentCategory.getId());
 
         for (CategoryEntity child : children) {
             child.setPath(parentCategory.getPath() + "/" + parentCategory.getId());
@@ -130,6 +131,9 @@ public class CategoryServiceImpl implements CategoryService {
                 .orElseThrow(() -> new NotFoundException(PRODUCT_CATEGORY_NOT_FOUND.getMessage()));
     }
 
-
+    private List<CategoryEntity> getCategoryByParentOrThrow(Long parentId) {
+        return categoryCacheService.getCategoryByParent(parentId)
+                .orElseThrow(() -> new NotFoundException(PRODUCT_CATEGORY_NOT_FOUND.getMessage()));
+    }
 
 }

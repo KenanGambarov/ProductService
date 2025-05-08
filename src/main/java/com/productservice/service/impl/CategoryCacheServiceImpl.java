@@ -55,8 +55,23 @@ public class CategoryCacheServiceImpl implements CategoryCacheService {
     }
 
 
-    public Optional<CategoryEntity> fallbackCategoryTree(Long categoryId, Throwable t) {
+    public Optional<List<CategoryTreeResponseDto>> fallbackCategoryTree(Long categoryId, Throwable t) {
         log.error("Redis not available for product category tree {}, falling back to DB. Error: {}",categoryId, t.getMessage());
+        return Optional.empty();
+    }
+
+    @Override
+    @CircuitBreaker(name = "redisBreaker", fallbackMethod = "fallbackGetCategoryByParent")
+    @Retry(name = "redisRetry", fallbackMethod = "fallbackGetCategoryByParent")
+    public Optional<List<CategoryEntity>> getCategoryByParent(Long parentId) {
+        List<CategoryEntity> categoryEntityList = cacheUtil.getOrLoad(ProductCacheConstraints.CATEGORY_KEY.getKey(parentId),
+                () -> categoryRepository.findByParentId(parentId),
+                ProductCacheDurationConstraints.DAY.toDuration());
+        return Optional.ofNullable(categoryEntityList);
+    }
+
+    public Optional<List<CategoryEntity>> fallbackGetCategoryByParent(Long parentId, Throwable t) {
+        log.error("Redis not available for product category with parent {}, falling back to DB. Error: {}",parentId, t.getMessage());
         return Optional.empty();
     }
 

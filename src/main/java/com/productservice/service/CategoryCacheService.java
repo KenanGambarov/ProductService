@@ -10,6 +10,8 @@ public interface CategoryCacheService {
 
     Optional<List<CategoryTreeResponseDto>> getCategoryTree();
 
+    Optional<List<CategoryEntity>> getCategoryByParent(Long parentId);
+    
     Optional<CategoryEntity> getCategory(Long categoryId);
 
     void clearCategoryCache(Long categoryId);
