@@ -38,6 +38,6 @@ spring:
   liquibase:
     enabled: true
     change-log: classpath:liquibase/db.changelog-master.yml
-    drop-first: false
+    drop-first: true
     default-schema: public
 
