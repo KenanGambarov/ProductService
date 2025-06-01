@@ -32,8 +32,16 @@ dependencies {
     implementation 'co.elastic.clients:elasticsearch-java:8.12.2'
     implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
+    implementation 'org.springframework.cloud:spring-cloud-starter-consul-discovery'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:2023.0.1"
+    }
 }
 
 tasks.named('test') {
