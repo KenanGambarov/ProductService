@@ -1,0 +1,40 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2-product-category
+      author: kenan
+      changes:
+        - createTable:
+            tableName: product_category
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: parent_id
+                  type: BIGINT
+              - column:
+                  name: path
+                  type: VARCHAR(500)
+              - column:
+                  name: level
+                  type: INT
+              - column:
+                  name: is_active
+                  type: BOOLEAN
+
+        - addForeignKeyConstraint:
+            constraintName: fk_product_category
+            baseTableName: product
+            baseColumnNames: category_id
+            referencedTableName: product_category
+            referencedColumnNames: id
+            onDelete: CASCADE
