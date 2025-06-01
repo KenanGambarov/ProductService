@@ -1,3 +1,15 @@
+spring:
+  application:
+    name: ms.product
+  cloud:
+    consul:
+      host: consul
+      port: 8500
+      discovery:
+        register: true
+        service-name: ${spring.application.name}
+        health-check-path: /actuator/health
+        health-check-interval: 10s
 resilience4j:
   retry:
     instances:
@@ -9,6 +21,14 @@ resilience4j:
           - java.util.concurrent.TimeoutException
         ignore-exceptions:
           - com.productservice.exception.NotFoundException
+management:
+  health:
+    elasticsearch:
+      enabled: false
+    rabbit:
+      enabled: false
+    redis:
+      enabled: false
 logging:
   config: classpath:logback-spring.xml
 redis:
